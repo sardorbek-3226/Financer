@@ -25,52 +25,63 @@ export default function Reports() {
     const daily = {};
     const monthly = {};
     const yearly = {};
-
+  
     txList.forEach((tx) => {
       const dateObj = new Date(tx.date);
-      const dayKey = dateObj.toLocaleDateString(); // "dd/mm/yyyy"
-      const monthKey = `${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`; // "mm-yyyy"
-      const yearKey = `${dateObj.getFullYear()}`; // "yyyy"
-
-      // Daily
+  
+      const dayKey = dateObj.toISOString().split("T")[0]; 
+      const monthKey = `${dateObj.getFullYear()}-${dateObj.getMonth() + 1}`;
+      const yearKey = `${dateObj.getFullYear()}`;
+  
+      // DAILY
       if (!daily[dayKey]) daily[dayKey] = { income: 0, expense: 0 };
-      if (tx.type === "income") daily[dayKey].income += tx.amount;
-      else daily[dayKey].expense += tx.amount;
-
-      // Monthly
+      if (tx.type === "income") daily[dayKey].income += Number(tx.amount);
+      else daily[dayKey].expense += Number(tx.amount);
+  
+      // MONTHLY
       if (!monthly[monthKey]) monthly[monthKey] = { income: 0, expense: 0 };
-      if (tx.type === "income") monthly[monthKey].income += tx.amount;
-      else monthly[monthKey].expense += tx.amount;
-
-      // Yearly
+      if (tx.type === "income") monthly[monthKey].income += Number(tx.amount);
+      else monthly[monthKey].expense += Number(tx.amount);
+  
+      // YEARLY
       if (!yearly[yearKey]) yearly[yearKey] = { income: 0, expense: 0 };
-      if (tx.type === "income") yearly[yearKey].income += tx.amount;
-      else yearly[yearKey].expense += tx.amount;
+      if (tx.type === "income") yearly[yearKey].income += Number(tx.amount);
+      else yearly[yearKey].expense += Number(tx.amount);
     });
-
-    // Convert object to array for rendering
+  
+    // 🔥 SORT QILIB ARRAYGA O‘TKAZAMIZ
+  
     setDailySummary(
-      Object.entries(daily).map(([date, val]) => ({
-        date,
-        ...val,
-        balance: val.income - val.expense,
-      }))
+      Object.entries(daily)
+        .map(([date, val]) => ({
+          date,
+          ...val,
+          balance: val.income - val.expense,
+        }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date)) // YANGI SANA TEPADA
     );
+  
     setMonthlySummary(
-      Object.entries(monthly).map(([month, val]) => ({
-        month,
-        ...val,
-        balance: val.income - val.expense,
-      }))
+      Object.entries(monthly)
+        .map(([month, val]) => ({
+          month,
+          ...val,
+          balance: val.income - val.expense,
+        }))
+        .sort((a, b) => new Date(b.month) - new Date(a.month))
     );
+  
     setYearlySummary(
-      Object.entries(yearly).map(([year, val]) => ({
-        year,
-        ...val,
-        balance: val.income - val.expense,
-      }))
+      Object.entries(yearly)
+        .map(([year, val]) => ({
+          year,
+          ...val,
+          balance: val.income - val.expense,
+        }))
+        .sort((a, b) => b.year - a.year)
     );
   };
+  
 
   const renderTable = (title, data, keyLabel) => (
     <div className="bg-white p-5 rounded-xl shadow-lg">
